@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useState, useEffect } from "react";
+import React, { createContext, useContext, useState } from "react";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { queryClient, apiRequest } from "@/lib/queryClient";
 import { toast } from "@/hooks/use-toast";
@@ -34,20 +34,22 @@ interface CartContextType {
 
 const CartContext = createContext<CartContextType | undefined>(undefined);
 
+const API_BASE = "https://your-backend-domain.com/api";
+
 export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [isCartOpen, setIsCartOpen] = useState(false);
   
   // Fetch cart items
-  const { data: cartItems = [], isLoading, refetch } = useQuery<CartItem[]>({
-    queryKey: ['/api/cart'],
+  const { data: cartItems = [], isLoading } = useQuery<CartItem[]>({
+    queryKey: [`${API_BASE}/cart`],
   });
 
   // Add to cart mutation
   const addToCartMutation = useMutation({
     mutationFn: (newItem: { productId: number; size: string; quantity: number }) => 
-      apiRequest('POST', '/api/cart', newItem),
+      apiRequest('POST', `${API_BASE}/cart`, newItem),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['/api/cart'] });
+      queryClient.invalidateQueries({ queryKey: [`${API_BASE}/cart`] });
       toast({
         title: "Added to cart",
         description: "Item has been added to your cart",
@@ -64,9 +66,9 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   // Remove from cart mutation
   const removeFromCartMutation = useMutation({
-    mutationFn: (id: number) => apiRequest('DELETE', `/api/cart/${id}`),
+    mutationFn: (id: number) => apiRequest('DELETE', `${API_BASE}/cart/${id}`),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['/api/cart'] });
+      queryClient.invalidateQueries({ queryKey: [`${API_BASE}/cart`] });
       toast({
         title: "Removed from cart",
         description: "Item has been removed from your cart",
@@ -84,9 +86,9 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
   // Update quantity mutation
   const updateQuantityMutation = useMutation({
     mutationFn: ({ id, quantity }: { id: number; quantity: number }) => 
-      apiRequest('PATCH', `/api/cart/${id}`, { quantity }),
+      apiRequest('PATCH', `${API_BASE}/cart/${id}`, { quantity }),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['/api/cart'] });
+      queryClient.invalidateQueries({ queryKey: [`${API_BASE}/cart`] });
     },
     onError: (error) => {
       toast({
@@ -99,9 +101,9 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   // Clear cart mutation
   const clearCartMutation = useMutation({
-    mutationFn: () => apiRequest('DELETE', '/api/cart'),
+    mutationFn: () => apiRequest('DELETE', `${API_BASE}/cart`),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['/api/cart'] });
+      queryClient.invalidateQueries({ queryKey: [`${API_BASE}/cart`] });
       toast({
         title: "Cart cleared",
         description: "All items have been removed from your cart",
@@ -125,7 +127,6 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const shipping = subtotal > 0 ? 5.99 : 0;
   const total = subtotal + shipping;
 
-  // Export all the necessary values and functions
   const value = {
     cartItems,
     isLoading,
