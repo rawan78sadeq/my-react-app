@@ -9,6 +9,7 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 export default defineConfig({
+  base: '/my-react-app/',
   plugins: [react(), runtimeErrorOverlay()],
   resolve: {
     alias: {
@@ -22,4 +23,4 @@ export default defineConfig({
     outDir: path.resolve(__dirname, "dist/public"),
     emptyOutDir: true,
   },
-});
+})
